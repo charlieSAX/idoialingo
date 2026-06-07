@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cantonese">
+<meta name="theme-color" content="#FFF9F3">
+<title>Cantonese · Lesson</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Noto+Serif+HK:wght@500;700;900&family=Noto+Sans+HK:wght@400;500;700&display=swap');
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  :root{
+    --paper:#FFF9F3; --paper2:#FCEFE2; --ink:#1B1A17; --muted:#94897C;
+    --mand:#FF6A3D; --mand-d:#E14E1E; --mand-t:#FFE6DB;
+    --pink:#FF3E7F; --pink-t:#FFE2EC;
+    --jade:#12B58E; --jade-d:#0C8E6F; --jade-t:#DBF6ED;
+    --rose:#F43F5E; --rose-d:#D42A47; --rose-t:#FFE1E7;
+    --gold:#FFB game; --line:#EFE7DA; --line-d:#DCD2C2; --card:#FFFFFF;
+  }
+  html,body{ height:100%; }
+  body{
+    font-family:'Hanken Grotesk',sans-serif; color:var(--ink);
+    background:radial-gradient(120% 90% at 50% -10%, #2c2a25, #1a1916);
+    display:flex; align-items:center; justify-content:center; min-height:100svh; padding:18px;
+  }
+  .phone{
+    position:relative; width:100%; max-width:392px; height:792px; max-height:calc(100svh - 36px);
+    background:
+      radial-gradient(120% 55% at 12% 0%, rgba(255,106,61,.30), transparent 55%),
+      radial-gradient(120% 50% at 96% 100%, rgba(255,62,127,.22), transparent 52%),
+      linear-gradient(180deg,var(--paper),var(--paper2));
+    border-radius:38px; overflow:hidden;
+    box-shadow:0 40px 90px -24px rgba(0,0,0,.6), 0 0 0 1px rgba(27,26,23,.05), inset 0 0 0 6px rgba(255,255,255,.4);
+  }
+  .grain{ position:absolute; inset:0; opacity:.045; pointer-events:none; mix-blend-mode:multiply; }
+
+  /* HUD */
+  .hud{ position:absolute; top:0; left:0; right:0; z-index:6; display:flex; align-items:center; gap:14px; padding:18px 20px 8px; }
+  .quit{ background:none; border:0; cursor:pointer; color:var(--muted); padding:2px; flex:none; }
+  .quit svg{ width:24px; height:24px; }
+  .track{ flex:1; height:15px; border-radius:99px; background:var(--line); overflow:hidden; box-shadow:inset 0 2px 4px rgba(27,26,23,.08); }
+  .track > i{ display:block; height:100%; width:8%; border-radius:99px; background:linear-gradient(90deg,var(--mand),var(--pink)); transition:width .5s cubic-bezier(.2,.8,.25,1); position:relative; }
+  .track > i:after{ content:""; position:absolute; left:4px; right:4px; top:3px; height:4px; border-radius:99px; background:rgba(255,255,255,.45); }
+  .hearts{ display:flex; align-items:center; gap:5px; font-weight:800; font-size:16px; color:var(--rose); flex:none; }
+  .hearts svg{ width:22px; height:22px; }
+  .hearts .n{ font-variant-numeric:tabular-nums; }
+
+  /* stage */
+  .stage{ position:absolute; left:0; right:0; top:54px; bottom:118px; }
+  .screen{ position:absolute; inset:0; padding:14px 22px; opacity:0; transform:translateX(28px); pointer-events:none; transition:opacity .32s, transform .32s; overflow-y:auto; }
+  .screen::-webkit-scrollbar{ width:0; }
+  .screen.active{ opacity:1; transform:translateX(0); pointer-events:auto; }
+  .prompt{ font-family:'Fraunces',serif; font-weight:500; font-size:23px; letter-spacing:-.01em; margin:6px 2px 4px; }
+  .sub{ font-size:13px; font-weight:600; color:var(--muted); margin-bottom:18px; }
+
+  /* word hero / intro */
+  .hero{ display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:14px; }
+  .emoji-big{ font-size:96px; line-height:1; filter:drop-shadow(0 12px 20px rgba(225,78,30,.28)); animation:floaty 3s ease-in-out infinite; }
+  .char-big{ font-family:'Noto Serif HK',serif; font-weight:900; font-size:74px; line-height:1; margin-top:14px; letter-spacing:.03em; }
+  .jyut{ font-size:26px; font-weight:700; color:var(--mand-d); margin-top:8px; }
+  .jyut .t{ font-family:'Fraunces',serif; font-size:18px; vertical-align:9px; color:var(--pink); font-weight:500; }
+  .eng{ font-family:'Fraunces',serif; font-size:22px; color:var(--muted); margin-top:6px; }
+  .speak{ margin-top:22px; display:inline-flex; align-items:center; gap:9px; cursor:pointer; border:0; font:inherit;
+    background:var(--card); color:var(--mand-d); font-weight:800; font-size:14px; letter-spacing:.04em;
+    padding:12px 20px; border-radius:99px; box-shadow:0 5px 0 var(--line-d), 0 10px 18px -8px rgba(27,26,23,.2); transition:transform .1s, box-shadow .1s; }
+  .speak:active{ transform:translateY(4px); box-shadow:0 1px 0 var(--line-d); }
+  .speak svg{ width:22px; height:22px; }
+  .speak.play svg{ animation:pulse .5s ease 2; }
+
+  /* mini prompt row for exercises */
+  .qrow{ display:flex; align-items:center; gap:14px; background:var(--card); border-radius:20px; padding:14px 16px; margin-bottom:20px;
+    box-shadow:0 6px 16px -10px rgba(27,26,23,.25), inset 0 0 0 1px var(--line); }
+  .qrow .spk2{ width:54px; height:54px; flex:none; border-radius:16px; border:0; cursor:pointer; background:linear-gradient(180deg,var(--mand),var(--mand-d)); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 5px 0 #c0410f; transition:transform .1s, box-shadow .1s; }
+  .qrow .spk2:active{ transform:translateY(4px); box-shadow:0 1px 0 #c0410f; }
+  .qrow .spk2 svg{ width:26px; height:26px; }
+  .qrow .qc{ font-family:'Noto Serif HK',serif; font-weight:900; font-size:42px; line-height:1; }
+  .qrow .qj{ font-size:17px; font-weight:700; color:var(--mand-d); margin-top:2px; }
+  .qrow .qj .t{ font-family:'Fraunces',serif; font-size:13px; vertical-align:6px; color:var(--pink); }
+
+  /* option grid (emoji) */
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .opt{ position:relative; border:0; cursor:pointer; background:var(--card); border-radius:22px; padding:22px 10px; font:inherit;
+    box-shadow:0 6px 0 var(--line-d), 0 12px 20px -10px rgba(27,26,23,.2); transition:transform .12s, box-shadow .12s, background .15s;
+    display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .opt:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--line-d); }
+  .opt .oe{ font-size:52px; line-height:1; transition:transform .2s; }
+  .opt .ol{ font-size:13px; font-weight:700; color:var(--muted); }
+  .opt.sel{ background:var(--mand-t); box-shadow:0 6px 0 var(--mand), 0 12px 22px -10px rgba(225,78,30,.4); }
+  .opt.sel .oe{ transform:scale(1.08) rotate(-4deg); }
+  .opt.ok{ background:var(--jade-t); box-shadow:0 6px 0 var(--jade); }
+  .opt.no{ background:var(--rose-t); box-shadow:0 6px 0 var(--rose); }
+
+  /* pairs */
+  .pairs{ display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; }
+  .ptile{ position:relative; border:0; cursor:pointer; background:var(--card); border-radius:18px; padding:16px 10px; font:inherit; min-height:74px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    box-shadow:0 5px 0 var(--line-d), 0 10px 18px -10px rgba(27,26,23,.2); transition:transform .12s, box-shadow .12s, background .15s, opacity .3s; }
+  .ptile:active{ transform:translateY(3px); box-shadow:0 2px 0 var(--line-d); }
+  .ptile .pc{ font-family:'Noto Serif HK',serif; font-weight:800; font-size:28px; line-height:1; }
+  .ptile .pj{ font-size:12px; font-weight:700; color:var(--mand-d); }
+  .ptile .pe{ font-size:40px; line-height:1; }
+  .ptile.sel{ background:var(--pink-t); box-shadow:0 5px 0 var(--pink), 0 10px 18px -8px rgba(255,62,127,.4); }
+  .ptile.gone{ transform:scale(.2); opacity:0; pointer-events:none; }
+  .ptile.bad{ animation:shake .35s; background:var(--rose-t); box-shadow:0 5px 0 var(--rose); }
+
+  /* complete */
+  .done-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:30px; }
+  .trophy{ font-size:104px; line-height:1; animation:pop2 .6s cubic-bezier(.34,1.56,.5,1); }
+  .done-wrap h1{ font-family:'Fraunces',serif; font-weight:600; font-size:34px; margin-top:10px; }
+  .done-wrap p{ color:var(--muted); font-weight:600; margin-top:4px; }
+  .scards{ display:flex; gap:12px; margin-top:26px; width:100%; }
+  .scard{ flex:1; border-radius:18px; padding:14px 10px; color:#fff; text-align:left; }
+  .scard.xp{ background:linear-gradient(160deg,#FFC83D,#FF9A1F); box-shadow:0 12px 22px -10px rgba(255,154,31,.6); }
+  .scard.acc{ background:linear-gradient(160deg,var(--jade),var(--jade-d)); box-shadow:0 12px 22px -10px rgba(12,142,111,.6); }
+  .scard .k{ font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; opacity:.9; }
+  .scard .v{ font-family:'Fraunces',serif; font-weight:600; font-size:30px; margin-top:6px; }
+
+  /* footer / action */
+  .footer{ position:absolute; left:0; right:0; bottom:0; z-index:7; padding:14px 22px 22px; }
+  .banner{ border-radius:16px; padding:12px 16px; margin-bottom:12px; display:none; align-items:center; gap:10px; font-weight:800; font-size:15px; }
+  .banner.show{ display:flex; animation:rise .3s; }
+  .banner.good{ background:var(--jade-t); color:var(--jade-d); }
+  .banner.bad{ background:var(--rose-t); color:var(--rose-d); }
+  .banner svg{ width:24px; height:24px; flex:none; }
+  .banner .bt{ font-family:'Hanken Grotesk'; }
+  .banner .bt small{ display:block; font-weight:600; font-size:12.5px; opacity:.85; }
+  .btn{ width:100%; border:0; cursor:pointer; padding:17px; border-radius:18px; font-family:'Hanken Grotesk'; font-weight:800; font-size:16px; letter-spacing:.05em;
+    color:#fff; background:linear-gradient(180deg,var(--mand),var(--mand-d)); box-shadow:0 6px 0 #c0410f, 0 14px 22px -8px rgba(225,78,30,.5); transition:transform .1s, box-shadow .1s; }
+  .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #c0410f; }
+  .btn.good{ background:linear-gradient(180deg,var(--jade),var(--jade-d)); box-shadow:0 6px 0 #0a7259, 0 14px 22px -8px rgba(12,142,111,.5); }
+  .btn.dis{ background:var(--line); color:var(--muted); box-shadow:0 6px 0 var(--line-d); cursor:default; pointer-events:none; }
+  .btn.hide{ display:none; }
+
+  .confetti{ position:absolute; top:-12px; width:10px; height:14px; border-radius:2px; z-index:9; pointer-events:none; }
+
+  @keyframes floaty{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+  @keyframes pulse{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.18);} }
+  @keyframes rise{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes pop2{ from{opacity:0; transform:scale(.4);} to{opacity:1; transform:scale(1);} }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px);} 40%{transform:translateX(7px);} 60%{transform:translateX(-5px);} 80%{transform:translateX(5px);} }
+  @keyframes fall{ to{ transform:translateY(840px) rotate(640deg); opacity:.9; } }
+
+  @media (max-width:440px){
+    body{ padding:0; background:var(--paper); }
+    .phone{ max-width:none; height:100svh; max-height:none; border-radius:0; box-shadow:none; }
+    .hud{ padding-top:max(18px, env(safe-area-inset-top)); }
+    .footer{ padding-bottom:max(22px, env(safe-area-inset-bottom)); }
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <svg class="grain"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+
+    <div class="hud">
+      <button class="quit" aria-label="Quit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <div class="track"><i id="bar"></i></div>
+      <div class="hearts"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21S4 14.5 4 8.8A4.3 4.3 0 0 1 12 6a4.3 4.3 0 0 1 8 2.8C20 14.5 12 21 12 21z"/></svg><span class="n" id="hearts">5</span></div>
+    </div>
+
+    <div class="stage">
+
+      <!-- s0: intro -->
+      <section class="screen active" id="s0">
+        <div class="prompt">New word</div>
+        <div class="sub">Tap to hear it, then carry on</div>
+        <div class="hero">
+          <div class="emoji-big">🍵</div>
+          <div class="char-big">茶</div>
+          <div class="jyut">caa<span class="t">4</span></div>
+          <div class="eng">Tea</div>
+          <button class="speak" data-say="茶"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8a5 5 0 0 1 0 8M18.5 5.5a9 9 0 0 1 0 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>HEAR IT</button>
+        </div>
+      </section>
+
+      <!-- s1: pick the emoji -->
+      <section class="screen" id="s1">
+        <div class="prompt">Tap the matching picture</div>
+        <div class="qrow">
+          <button class="spk2" data-say="茶" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8a5 5 0 0 1 0 8M18.5 5.5a9 9 0 0 1 0 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+          <div><div class="qc">茶</div><div class="qj">caa<span class="t">4</span></div></div>
+        </div>
+        <div class="grid" data-ex="choice" data-correct="tea">
+          <button class="opt" data-val="tea"><span class="oe">🍵</span><span class="ol">caa4</span></button>
+          <button class="opt" data-val="coffee"><span class="oe">☕</span><span class="ol">gaa3 fe1</span></button>
+          <button class="opt" data-val="water"><span class="oe">💧</span><span class="ol">seoi2</span></button>
+          <button class="opt" data-val="noodles"><span class="oe">🍜</span><span class="ol">min6</span></button>
+        </div>
+      </section>
+
+      <!-- s2: tap the pairs -->
+      <section class="screen" id="s2">
+        <div class="prompt">Tap the matching pairs</div>
+        <div class="sub">Match each word to its picture</div>
+        <div class="pairs" id="pairs"></div>
+      </section>
+
+      <!-- s3: listen and choose -->
+      <section class="screen" id="s3">
+        <div class="prompt">What did you hear?</div>
+        <div class="qrow">
+          <button class="spk2" data-say="水" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8a5 5 0 0 1 0 8M18.5 5.5a9 9 0 0 1 0 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+          <div style="font-weight:700;color:var(--muted)">Tap the speaker to replay</div>
+        </div>
+        <div class="grid" data-ex="choice" data-correct="water">
+          <button class="opt" data-val="water"><span class="oe">💧</span><span class="ol">Water</span></button>
+          <button class="opt" data-val="rice"><span class="oe">🍚</span><span class="ol">Rice</span></button>
+          <button class="opt" data-val="apple"><span class="oe">🍎</span><span class="ol">Apple</span></button>
+          <button class="opt" data-val="fish"><span class="oe">🐟</span><span class="ol">Fish</span></button>
+        </div>
+      </section>
+
+      <!-- s4: complete -->
+      <section class="screen" id="s4">
+        <div class="done-wrap">
+          <div class="trophy">🏆</div>
+          <h1>Lesson complete</h1>
+          <p>橫掂你叻 · nicely done</p>
+          <div class="scards">
+            <div class="scard xp"><div class="k">Total XP</div><div class="v">+25</div></div>
+            <div class="scard acc"><div class="k">Accuracy</div><div class="v" id="accv">100%</div></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="footer">
+      <div class="banner" id="banner"></div>
+      <button class="btn" id="btn">CONTINUE</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var phone=document.querySelector('.phone');
+  var bar=document.getElementById('bar'), heartsEl=document.getElementById('hearts');
+  var banner=document.getElementById('banner'), btn=document.getElementById('btn');
+  var screens=['s0','s1','s2','s3','s4'];
+  var i=0, hearts=5, answered=0, correctCount=0, locked=false, action=advance;
+
+  /* ---- audio ---- */
+  function pickVoice(){
+    var vs=(window.speechSynthesis&&window.speechSynthesis.getVoices())||[];
+    return vs.find(function(x){return /zh.?HK|yue|cantonese|sin.?ji/i.test((x.lang||'')+(x.name||''));})
+        || vs.find(function(x){return /zh/i.test(x.lang||'');});
+  }
+  function say(text, el){
+    if(el){ el.classList.remove('play'); void el.offsetWidth; el.classList.add('play'); }
+    try{ var u=new SpeechSynthesisUtterance(text); u.lang='zh-HK'; u.rate=.85; var v=pickVoice(); if(v)u.voice=v;
+      window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  try{ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();}; }catch(e){}
+  document.addEventListener('click', function(e){
+    var s=e.target.closest('[data-say]'); if(s){ say(s.getAttribute('data-say'), s); }
+  });
+
+  /* ---- navigation ---- */
+  function setBar(){ bar.style.width=(i/(screens.length-1)*100)+'%'; }
+  function show(idx){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    var el=document.getElementById(screens[idx]); el.classList.add('active'); el.scrollTop=0;
+  }
+  function setBtn(label, cls, fn, disabled){
+    btn.textContent=label; btn.className='btn'+(cls?(' '+cls):'')+(disabled?' dis':''); action=fn;
+  }
+  function hideBanner(){ banner.className='banner'; banner.innerHTML=''; }
+  function showBanner(good, title, sub){
+    banner.className='banner show '+(good?'good':'bad');
+    var icon=good?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></svg>'
+                 :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+    banner.innerHTML=icon+'<span class="bt">'+title+(sub?('<small>'+sub+'</small>'):'')+'</span>';
+  }
+
+  function enter(){
+    locked=false; hideBanner(); setBar(); show(i);
+    var id=screens[i];
+    if(id==='s0'){ setBtn('CONTINUE','',advance,false); setTimeout(function(){say('茶');},250); }
+    else if(id==='s1'){ setupChoice('s1'); setTimeout(function(){say('茶');},250); }
+    else if(id==='s2'){ setupPairs(); btn.className='btn hide'; }
+    else if(id==='s3'){ setupChoice('s3'); setTimeout(function(){say('水');},350); }
+    else if(id==='s4'){
+      document.getElementById('accv').textContent = Math.round(correctCount/Math.max(answered,1)*100)+'%';
+      setBtn('CLAIM +25 XP','good',function(){ blast(); },false);
+      setTimeout(blast,300);
+    }
+  }
+  function advance(){ if(i<screens.length-1){ i++; enter(); } }
+
+  /* ---- choice exercises ---- */
+  function setupChoice(id){
+    var grid=document.querySelector('#'+id+' .grid'); var correct=grid.getAttribute('data-correct'); var chosen=null;
+    setBtn('CHECK','',function(){}, true);
+    grid.querySelectorAll('.opt').forEach(function(o){
+      o.className='opt';
+      o.onclick=function(){
+        if(locked) return;
+        grid.querySelectorAll('.opt').forEach(function(x){x.classList.remove('sel');});
+        o.classList.add('sel'); chosen=o;
+        setBtn('CHECK','',function(){ check(grid,correct,chosen); }, false);
+      };
+    });
+  }
+  function check(grid, correct, chosen){
+    if(!chosen||locked) return; locked=true; answered++;
+    var ok = chosen.getAttribute('data-val')===correct;
+    chosen.classList.remove('sel'); chosen.classList.add(ok?'ok':'no');
+    if(ok){ correctCount++; showBanner(true,'Sou hou! · Correct'); }
+    else{
+      hearts=Math.max(0,hearts-1); heartsEl.textContent=hearts;
+      var right=grid.querySelector('.opt[data-val="'+correct+'"]'); if(right) right.classList.add('ok');
+      showBanner(false,'Not quite','The match was the highlighted one');
+    }
+    setBtn('CONTINUE', ok?'good':'good', advance, false);
+  }
+
+  /* ---- pairs exercise ---- */
+  var PAIRS=[ {k:'water',c:'水',j:'seoi2',e:'💧'}, {k:'rice',c:'飯',j:'faan6',e:'🍚'}, {k:'apple',c:'蘋果',j:'ping4 gwo2',e:'🍎'} ];
+  function shuffle(a){ a=a.slice(); for(var n=a.length-1;n>0;n--){ var m=Math.floor(Math.random()*(n+1)); var t=a[n]; a[n]=a[m]; a[m]=t; } return a; }
+  function setupPairs(){
+    var wrap=document.getElementById('pairs'); wrap.innerHTML='';
+    var left=shuffle(PAIRS), right=shuffle(PAIRS), matched=0, selLeft=null, selRight=null;
+    // interleave into a 2-col grid: build rows
+    var rows=Math.max(left.length,right.length);
+    for(var r=0;r<rows;r++){
+      wrap.appendChild(mkLeft(left[r])); wrap.appendChild(mkRight(right[r]));
+    }
+    function mkLeft(p){ var b=document.createElement('button'); b.className='ptile'; b.dataset.k=p.k; b.dataset.side='L';
+      b.innerHTML='<span class="pc">'+p.c+'</span><span class="pj">'+p.j+'</span>'; b.onclick=function(){ tap(b,'L',p); }; return b; }
+    function mkRight(p){ var b=document.createElement('button'); b.className='ptile'; b.dataset.k=p.k; b.dataset.side='R';
+      b.innerHTML='<span class="pe">'+p.e+'</span>'; b.onclick=function(){ tap(b,'R',p); }; return b; }
+    function clearSel(){ if(selLeft)selLeft.classList.remove('sel'); if(selRight)selRight.classList.remove('sel'); selLeft=null; selRight=null; }
+    function tap(b, side, p){
+      if(b.classList.contains('gone')) return;
+      if(side==='L'){ say(p.c, b); if(selLeft===b){ b.classList.remove('sel'); selLeft=null; return; } if(selLeft)selLeft.classList.remove('sel'); selLeft=b; }
+      else{ if(selRight===b){ b.classList.remove('sel'); selRight=null; return; } if(selRight)selRight.classList.remove('sel'); selRight=b; }
+      b.classList.add('sel');
+      if(selLeft&&selRight){
+        if(selLeft.dataset.k===selRight.dataset.k){
+          var a=selLeft, c=selRight; clearSel();
+          setTimeout(function(){ a.classList.add('gone'); c.classList.add('gone'); },140);
+          matched++;
+          if(matched===PAIRS.length){
+            answered++; correctCount++;
+            setTimeout(function(){ showBanner(true,'Leng! · all matched'); setBtn('CONTINUE','good',advance,false); },420);
+          }
+        } else {
+          var a2=selLeft, c2=selRight; a2.classList.add('bad'); c2.classList.add('bad');
+          setTimeout(function(){ a2.classList.remove('bad'); c2.classList.remove('bad'); },380);
+          clearSel();
+        }
+      }
+    }
+  }
+
+  /* ---- confetti ---- */
+  function blast(){
+    var cols=['#FF6A3D','#FF3E7F','#12B58E','#FFC83D','#37B6E9'];
+    for(var k=0;k<30;k++){ (function(k){
+      var d=document.createElement('div'); d.className='confetti';
+      d.style.left=(Math.random()*100)+'%'; d.style.background=cols[k%cols.length];
+      d.style.animation='fall '+(1.1+Math.random()*1.1)+'s '+(Math.random()*.3)+'s ease-in forwards';
+      d.style.transform='rotate('+(Math.random()*360)+'deg)';
+      phone.appendChild(d); setTimeout(function(){ d.remove(); },2600);
+    })(k); }
+  }
+
+  btn.addEventListener('click', function(){ if(typeof action==='function') action(); });
+  document.querySelector('.quit').addEventListener('click', function(){ i=0; hearts=5; answered=0; correctCount=0; heartsEl.textContent=5; enter(); });
+
+  enter();
+})();
+</script>
+</body>
+</html>
