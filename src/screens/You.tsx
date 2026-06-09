@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { actions, useProgress, wordsLearned } from '../lib/store';
 import { cantoneseVoices, isIOS, setPreferredVoice, speak } from '../lib/speech';
 
@@ -9,6 +9,8 @@ function Switch({ on, onToggle, label }: { on: boolean; onToggle: () => void; la
 export function You() {
   const p = useProgress();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [restoreMsg, setRestoreMsg] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const update = () => setVoices(cantoneseVoices());
@@ -20,6 +22,29 @@ export function You() {
       return;
     }
   }, []);
+
+  const backup = () => {
+    const blob = new Blob([actions.exportProgress()], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `idoialingo-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setRestoreMsg('Backup saved to your Files / Downloads.');
+  };
+
+  const onRestoreFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-picking the same file
+    if (!file) return;
+    if (!window.confirm('Restore from this backup? It will replace the progress currently on this device.')) return;
+    const text = await file.text();
+    const ok = actions.importProgress(text);
+    setRestoreMsg(ok ? 'Progress restored ✓' : "That file doesn't look like an Idoialingo backup.");
+  };
 
   return (
     <div className="page-scroll">
@@ -95,6 +120,29 @@ export function You() {
           <option value={20}>20 XP</option>
           <option value={30}>30 XP</option>
         </select>
+      </div>
+
+      <div className="setrow" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+        <div>
+          <div className="sl">Backup &amp; restore</div>
+          <div className="sd">
+            Progress lives only on this device. Save a backup file you can keep safe or move to another phone, and restore it any time.
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+          <button className="softbtn" onClick={backup}>
+            ⤓ Back up
+          </button>
+          <button className="softbtn" onClick={() => fileRef.current?.click()}>
+            ⤒ Restore
+          </button>
+        </div>
+        <input ref={fileRef} type="file" accept="application/json,.json" onChange={onRestoreFile} style={{ display: 'none' }} aria-hidden="true" />
+        {restoreMsg && (
+          <div className="sd" style={{ marginTop: 10, color: 'var(--ux-d)', fontWeight: 700 }}>
+            {restoreMsg}
+          </div>
+        )}
       </div>
 
       <button

@@ -215,6 +215,38 @@ export const actions = {
   resetAll() {
     state = { ...DEFAULTS, streak: { ...DEFAULTS.streak }, days: {}, lessons: {}, chests: {}, srs: {}, flags: {} };
     emit();
+  },
+
+  /** Serialise all progress to a portable backup string. */
+  exportProgress(): string {
+    return JSON.stringify({ app: 'idoialingo', v: 1, exportedAt: new Date().toISOString(), data: state }, null, 2);
+  },
+
+  /**
+   * Restore progress from a backup string produced by exportProgress.
+   * Returns true on success. Merges over defaults so older/newer backups
+   * stay forward-compatible.
+   */
+  importProgress(raw: string): boolean {
+    try {
+      const parsed = JSON.parse(raw);
+      const data = (parsed?.app === 'idoialingo' && parsed.data ? parsed.data : parsed) as Partial<Progress>;
+      if (!data || typeof data !== 'object' || !('lessons' in data)) return false;
+      state = {
+        ...DEFAULTS,
+        ...data,
+        streak: { ...DEFAULTS.streak, ...(data.streak ?? {}) },
+        days: data.days ?? {},
+        lessons: data.lessons ?? {},
+        chests: data.chests ?? {},
+        srs: data.srs ?? {},
+        flags: data.flags ?? {}
+      };
+      emit();
+      return true;
+    } catch {
+      return false;
+    }
   }
 };
 
